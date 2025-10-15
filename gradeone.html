@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Bee</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            color: #e6e6e6;
+            touch-action: manipulation;
+        }
+        
+        .container {
+            background-color: #0f3460;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #e6e6e6;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: clamp(1.5rem, 5vw, 2rem);
+        }
+        
+        .subtitle {
+            color: #a5b1c2;
+            margin-bottom: 20px;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            line-height: 1.4;
+        }
+        
+        .search-container {
+            margin-bottom: 20px;
+        }
+        
+        #searchInput {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            font-size: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        #searchInput::placeholder {
+            color: #a5b1c2;
+        }
+        
+        .word-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 25px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        
+        .word-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 10px;
+            background-color: #1a1a2e;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            font-weight: 500;
+            color: #e6e6e6;
+            border: 2px solid transparent;
+            user-select: none;
+            min-height: 60px;
+            text-align: center;
+            word-break: break-word;
+        }
+        
+        .word-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border-color: #6e8efb;
+        }
+        
+        .word-item.active {
+            background-color: #4CAF50;
+            color: #1a1a2e;
+            transform: scale(1.02);
+        }
+        
+        .word-item.playing {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .instructions {
+            background-color: #1a1a2e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
+            color: #a5b1c2;
+            border-left: 4px solid #4CAF50;
+            line-height: 1.5;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+        
+        .footer {
+            color: #777;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
+            margin-top: 20px;
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                border-radius: 12px;
+            }
+            
+            .word-item {
+                padding: 12px 8px;
+                min-height: 55px;
+            }
+            
+            .instructions {
+                padding: 12px;
+            }
+            
+            .word-list {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+        
+        /* Large screen adjustments */
+        @media (min-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+        }
+        
+        /* Touch-friendly improvements */
+        @media (hover: none) {
+            .word-item:hover {
+                transform: none;
+                border-color: transparent;
+            }
+            
+            .word-item:active {
+                transform: scale(0.98);
+            }
+        }
+        
+        /* Scrollbar styling */
+        .word-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .word-list::-webkit-scrollbar-track {
+            background: #1a1a2e;
+            border-radius: 10px;
+        }
+        
+        .word-list::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grade 1 Words</h1>
+        <p class="subtitle">Tap to play audio and turn green • Double-tap to reset color</p>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search for a word...">
+        </div>
+        
+        <div class="word-list" id="wordList">
+            <!-- Word items will be generated by JavaScript -->
+        </div>
+        
+        <div class="instructions">
+            <p><strong>How to use:</strong> Tap any word to play its audio and change its color to green. Double-tap to reset the color back to default.</p>
+        </div>
+        
+        <p class="footer">Words with audio from Cambridge Dictionary</p>
+    </div>
+
+    <script>
+        // Array of words with their corresponding audio file URLs
+        const wordData = [
+            { word: "cat", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukc/ukcas/ukcaste011.mp3" },
+            { word: "dog", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukd/ukdoc/ukdocud022.mp3" },
+            { word: "bat", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukb/ukbas/ukbashf030.mp3" },
+            { word: "hat", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukh/ukhas/ukhasty002.mp3" },
+            { word: "sun", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksom/uksomet012.mp3" },
+            { word: "run", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukr/ukrum/ukrum__018.mp3" },
+            { word: "man", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukm/ukmam/ukmammo003.mp3" },
+            { word: "fan", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukf/ukfal/ukfalsi017.mp3" },
+            { word: "pan", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpam/ukpampe003.mp3" },
+            { word: "pen", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpee/ukpeewe016.mp3" },
+            { word: "hen", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukh/ukhel/ukhellu021.mp3" },
+            { word: "bed", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukb/ukbea/ukbeau_026.mp3" },
+            { word: "red", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukr/ukray/ukrayon024.mp3" },
+            { word: "bug", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukb/ukbud/ukbuddh018.mp3" },
+            { word: "rug", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukr/ukruc/ukrucks017.mp3" },
+            { word: "hug", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukh/ukhuf/ukhuffi004.mp3" },
+            { word: "cup", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukc/ukcun/ukcunt_002.mp3" },
+            { word: "pup", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpun/ukpunst005.mp3" },
+            { word: "map", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukm/ukman/ukmanuf009.mp3" },
+            { word: "cap", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukc/ukcan/ukcant_015.mp3" },
+            { word: "tap", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukt/uktan/uktanke018.mp3" },
+            { word: "lip", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukl/uklin/uklink_013.mp3" },
+            { word: "sip", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksin/uksinle009.mp3" },
+            { word: "tip", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukt/uktim/uktimin028.mp3" },
+            { word: "fig", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukf/ukfif/ukfifte007.mp3" },
+            { word: "pig", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpic/ukpictu020.mp3" },
+            { word: "wig", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukw/ukwi_/ukwi___019.mp3" },
+            { word: "box", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukb/ukbou/ukbount021.mp3" },
+            { word: "top", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukt/uktop/uktop__001.mp3" },
+            { word: "hop", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukh/ukhoo/ukhoove002.mp3" },
+            { word: "fish", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukf/ukfir/ukfirew013.mp3" },
+            { word: "ball", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukb/ukbal/ukbalal014.mp3" },
+            { word: "jump", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukj/ukjud/ukjudic027.mp3" },
+            { word: "play", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukp/ukpla/ukplate018.mp3" },
+            { word: "book", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukb/ukbon/ukbonfi028.mp3" },
+            { word: "look", audioUrl: "https://s3.eu-west-1.amazonaws.com/com.idmgroup.cdo.media/sounds/english/uk_pron/u/ukl/uklon/uklonel018.mp3" },
+            { word: "good", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukg/ukgon/ukgonad011.mp3" },
+            { word: "food", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukf/ukfol/ukfolks015.mp3" },
+            { word: "stop", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksto/ukstoma022.mp3" },
+            { word: "help", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukh/ukhel/ukhellu006.mp3" },
+            { word: "hand", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukh/ukhal/ukhallw029.mp3" },
+            { word: "foot", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukf/ukfol/ukfolks026.mp3" },
+            { word: "rain", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukr/ukraf/ukraffl025.mp3" },
+            { word: "star", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksta/ukstand022.mp3" },
+            { word: "tree", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukt/uktre/uktreac020.mp3" },
+            { word: "frog", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukf/ukfri/ukfrill022.mp3" },
+            { word: "bird", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukb/ukbip/ukbipla004.mp3" },
+            { word: "nest", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukn/uknep/ukneptu013.mp3" },
+            { word: "kite", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukk/ukkit/ukkit__004.mp3" },
+            { word: "home", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukh/ukhol/ukholdu027.mp3" },
+            { word: "door", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukd/ukdon/ukdonke014.mp3" },
+            { word: "game", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukg/ukgam/ukgambl004.mp3" },
+            { word: "blue", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukb/ukble/ukbleep012.mp3" },
+            { word: "pink", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpil/ukpilot027.mp3" },
+            { word: "milk", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukm/ukmil/ukmilea020.mp3" },
+            { word: "cake", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukc/ukcaj/ukcajun002.mp3" },
+            { word: "lamp", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukl/uklai/uklaidb030.mp3" },
+            { word: "ship", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/ukshi/ukshine014.mp3" },
+            { word: "king", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukk/ukkin/ukkindl009.mp3" },
+            { word: "ring", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukr/ukrig/ukrigor009.mp3" },
+            { word: "apple", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uka/ukapp/ukappen014.mp3" },
+            { word: "table", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksyn/uksynta027.mp3" },
+            { word: "chair", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukc/ukcey/ukceylo014.mp3" },
+            { word: "smile", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksma/uksmash013.mp3" },
+            { word: "bread", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukb/ukbra/ukbraw_014.mp3" },
+            { word: "grass", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukg/ukgra/ukgranu022.mp3" },
+            { word: "clock", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukc/ukcli/ukclipp014.mp3" },
+            { word: "sleep", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksla/ukslave022.mp3" },
+            { word: "train", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukt/uktra/uktract028.mp3" },
+            { word: "light", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukl/uklif/uklifes006.mp3" },
+            { word: "night", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukk/ukkne/ukkneel012.mp3" },
+            { word: "shine", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/ukshi/ukshine001.mp3" },
+            { word: "bring", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukb/ukbri/ukbriga019.mp3" },
+            { word: "swing", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/ukswe/uksweet026.mp3" },
+            { word: "thing", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukt/ukthi/ukthick014.mp3" },
+            { word: "three", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukt/uktho/ukthoug012.mp3" },
+            { word: "small", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/ukslu/ukslutt014.mp3" },
+            { word: "plant", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpla/ukplain017.mp3" },
+            { word: "drink", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukd/ukdre/ukdress019.mp3" },
+            { word: "sweet", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksug/uksugar014.mp3" },
+            { word: "clean", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukc/ukcla/ukclass014.mp3" },
+            { word: "story", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksto/ukstore008.mp3" },
+            { word: "magic", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukm/ukmad/ukmade_011.mp3" },
+            { word: "quick", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukq/ukqui/ukquibb003.mp3" },
+            { word: "brown", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukb/ukbro/ukbroug006.mp3" },
+            { word: "yellow", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uky/ukyd_/ukyd___013.mp3" },
+            { word: "purple", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpur/ukpurit004.mp3" },
+            { word: "orange", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uko/ukora/ukorang001.mp3" },
+            { word: "family", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukf/ukfal/ukfalsi012.mp3" },
+            { word: "animal", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uka/ukang/ukangel030.mp3" },
+            { word: "people", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpen/ukpente010.mp3" },
+            { word: "summer", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukp/ukpen/ukpente010.mp3" },
+            { word: "winter", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukw/ukwin/ukwinni009.mp3" },
+            { word: "spring", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/ukspo/ukspotl024.mp3" },
+            { word: "father", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/c/cdo/cdo03/cdo0317fathuk4615.mp3" },
+            { word: "mother", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukm/ukmot/ukmothe001.mp3" },
+            { word: "sister", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukm/ukmot/ukmothe001.mp3" },
+            { word: "little", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukl/uklit/uklitig008.mp3" },
+            { word: "school", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/uks/uksch/ukschol005.mp3" },
+            { word: "friend", audioUrl: "https://dictionary.cambridge.org/media/english/uk_pron/u/ukf/ukfri/ukfrica007.mp3" }
+        ];
+
+        // Single audio element for better mobile compatibility
+        const audioPlayer = new Audio();
+        let currentPlayingIndex = -1;
+
+        // Create word list items
+        function createWordList() {
+            const wordListContainer = document.getElementById('wordList');
+            
+            wordData.forEach((item, index) => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.textContent = item.word;
+                wordItem.dataset.index = index;
+                
+                // Add click event to play audio and change color to green
+                wordItem.addEventListener('click', function() {
+                    playAudio(index);
+                    changeToGreen(this);
+                });
+                
+                // Add double-click event to reset color
+                wordItem.addEventListener('dblclick', function(e) {
+                    e.preventDefault();
+                    resetColor(this);
+                });
+                
+                // Add touch events for better mobile support
+                wordItem.addEventListener('touchstart', function(e) {
+                    // Prevent default to avoid double-tap zoom
+                    if (e.touches.length > 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                wordListContainer.appendChild(wordItem);
+            });
+        }
+
+        // Play audio function - optimized for mobile
+        function playAudio(index) {
+            // Stop current audio if playing
+            if (!audioPlayer.paused) {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+            }
+            
+            // Remove playing class from all items
+            document.querySelectorAll('.word-item').forEach(item => {
+                item.classList.remove('playing');
+            });
+            
+            // Add playing class to current item
+            const currentItem = document.querySelector(`.word-item[data-index="${index}"]`);
+            currentItem.classList.add('playing');
+            
+            // Set the audio source and play
+            audioPlayer.src = wordData[index].audioUrl;
+            
+            // Play with error handling for mobile
+            const playPromise = audioPlayer.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Audio play failed:", error);
+                    currentItem.classList.remove('playing');
+                    // Show a message to the user
+                    //alert("Unable to play audio. Please make sure your device isn't on silent mode.");
+                });
+            }
+            
+            // Remove playing class when audio ends
+            audioPlayer.onended = function() {
+                currentItem.classList.remove('playing');
+            };
+            
+            currentPlayingIndex = index;
+        }
+
+        // Change color to green function
+        function changeToGreen(element) {
+            element.classList.add('active');
+        }
+
+        // Reset color function
+        function resetColor(element) {
+            element.classList.remove('active');
+        }
+
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const wordItems = document.querySelectorAll('.word-item');
+                
+                wordItems.forEach(item => {
+                    const word = item.textContent.toLowerCase();
+                    if (word.includes(searchTerm)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Initialize the application
+        window.addEventListener('DOMContentLoaded', () => {
+            createWordList();
+            setupSearch();
+            
+            // Add a user interaction requirement message for iOS
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                const instructions = document.querySelector('.instructions p');
+                instructions.innerHTML += "<br><br><strong>Note for iOS:</strong> Make sure your device is not on silent mode for audio to work properly.";
+            }
+        });
+    </script>
+</body>
+</html>
