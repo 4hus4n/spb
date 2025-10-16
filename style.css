@@ -83,7 +83,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             cursor: pointer;
-            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            font-size: clamp(1.2rem, 4vw, 1.4rem);
             font-weight: 500;
             color: #e6e6e6;
             border: 2px solid transparent;
@@ -185,4 +185,5 @@
         .word-list::-webkit-scrollbar-thumb {
             background: #4CAF50;
             border-radius: 10px;
+
         }
