@@ -84,7 +84,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             cursor: pointer;
-            font-size: clamp(0.9rem, 3vw, 1.6rem);
+            font-size: clamp(1.1rem, 3vw, 1.6rem);
             font-weight: 500;
             color: #e6e6e6;
             border: 2px solid transparent;
@@ -205,3 +205,4 @@
             border-radius: 10px;
 
         }
+
