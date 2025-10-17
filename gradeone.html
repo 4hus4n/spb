@@ -143,6 +143,7 @@
                 const wordItem = document.createElement('div');
                 wordItem.className = 'word-item';
                 wordItem.textContent = item.word;
+                wordItem.dataset.index = index;
 
                 const indexNumber = document.createElement('div');
                 indexNumber.className = 'index-number';
@@ -255,4 +256,5 @@
         });
     </script>
 </body>
+
 </html>
